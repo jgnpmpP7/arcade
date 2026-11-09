@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ひまつぶしアーケード</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%95%B9%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ひまつぶしアーケード">
+<meta name="theme-color" content="#1b2a49">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6f4ef;--ink:#1b2a49;--card:#fff;--coral:#ff5c7a;--sun:#ffc93c;--teal:#1fa896;--on-accent:#1b2a49;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14203a;--ink:#f2f6ff;--card:#223152;--coral:#ff7a92;--sun:#ffd666;--teal:#3cc4b1;--on-accent:#14203a}}
+:root[data-theme="dark"]{--bg:#14203a;--ink:#f2f6ff;--card:#223152;--coral:#ff7a92;--sun:#ffd666;--teal:#3cc4b1;--on-accent:#14203a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;font-weight:500;line-height:1.6}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:"Dela Gothic One","Hiragino Sans",sans-serif;font-weight:400;font-size:clamp(28px,8vw,40px);margin:8px 0 4px;line-height:1.2}
+.sub{margin:0 0 20px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+nav button{flex:1 1 28%;font:inherit;font-weight:700;color:var(--ink);background:var(--card);border:3px solid var(--ink);border-radius:14px;padding:10px 4px;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+nav button[aria-selected="true"]{background:var(--sun);color:var(--on-accent);transform:translate(3px,3px);box-shadow:none}
+button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.panel{background:var(--card);border:3px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--ink);padding:18px}
+.panel[hidden]{display:none}
+.bar{display:flex;justify-content:space-between;font-weight:700;margin-bottom:12px}
+.big{display:block;width:100%;min-height:240px;font:inherit;font-size:22px;font-weight:700;border:3px solid var(--ink);border-radius:16px;cursor:pointer;color:var(--on-accent);background:var(--teal);user-select:none}
+.big.wait{background:var(--coral)}.big.go{background:var(--sun)}
+.grid{display:grid;gap:10px}
+.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.cell{aspect-ratio:1;font:inherit;font-size:34px;font-weight:700;border:3px solid var(--ink);border-radius:50%;background:var(--bg);color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0}
+.hole{box-shadow:inset 0 6px 0 rgba(0,0,0,.18)}
+.cell.up{background:var(--sun);color:var(--on-accent)}
+.cell.bomb{background:var(--coral);color:var(--on-accent)}
+.num{border-radius:14px;font-size:24px}
+.num.done{background:var(--teal);color:var(--on-accent);opacity:.45}
+.start{margin-top:14px;width:100%;font:inherit;font-weight:700;font-size:18px;color:var(--on-accent);background:var(--coral);border:3px solid var(--ink);border-radius:14px;padding:12px;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.msg{min-height:1.6em;margin:12px 0 0;font-weight:700;text-align:center}
+.help{margin:0 0 12px;font-size:14px}
+.lv{display:flex;gap:6px;margin-bottom:8px}
+.lv button{flex:1;font:inherit;font-size:13px;font-weight:700;border:3px solid var(--ink);border-radius:10px;background:var(--bg);color:var(--ink);padding:6px 2px;cursor:pointer}
+.lv button[aria-pressed="true"]{background:var(--sun);color:var(--on-accent)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.pad{aspect-ratio:1.3;border:3px solid var(--ink);border-radius:22px;background:var(--c);opacity:.5;cursor:pointer;padding:0}
+.pad.lit{opacity:1;transform:scale(.96)}
+.card{border-radius:14px;font-size:30px}.card.open{background:var(--sun);color:var(--on-accent)}
+.row{display:flex;gap:8px}
+.row input{flex:1;min-width:0;font:inherit;font-size:22px;letter-spacing:.3em;text-align:center;color:var(--ink);background:var(--bg);border:3px solid var(--ink);border-radius:14px;padding:8px}
+.row .start{margin-top:0;width:auto;padding:8px 18px}
+.tbox{position:relative}
+.tout{flex:1;min-width:0;min-height:2.6em;display:grid;place-items:center;padding:8px;font-size:22px;font-weight:700;letter-spacing:.1em;color:var(--ink);background:var(--bg);border:3px solid var(--ink);border-radius:14px;overflow:hidden;word-break:break-all}
+.tbox input{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;opacity:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent}
+#hl{list-style:none;margin:14px 0 0;padding:0;font-variant-numeric:tabular-nums}
+#hl li{padding:6px 0;border-bottom:2px dashed var(--ink)}
+.snd{font:inherit;font-weight:700;font-size:14px;color:var(--ink);background:var(--card);border:3px solid var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer;margin-bottom:16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>ひまつぶしアーケード</h1>
+<p class="sub">1ゲーム30秒以内。ハイスコアはこの端末に保存されます。</p>
+<button class="snd" id="snd" aria-pressed="true"></button>
+<nav role="tablist">
+<button role="tab" aria-selected="true" data-t="r">タイミング</button>
+<button role="tab" aria-selected="false" data-t="m">もぐら</button>
+<button role="tab" aria-selected="false" data-t="n">数字タップ</button>
+<button role="tab" aria-selected="false" data-t="s">記憶リレー</button>
+<button role="tab" aria-selected="false" data-t="c">神経衰弱</button>
+<button role="tab" aria-selected="false" data-t="h">絵文字クイズ</button>
+<button role="tab" aria-selected="false" data-t="t">タイピング</button>
+<button role="tab" aria-selected="false" data-t="p">スライドパズル</button>
+<button role="tab" aria-selected="false" data-t="d">避けゲー</button>
+</nav>
+
+<section class="panel" id="r">
+<div class="lv" id="rmode"></div>
+<div id="rbox">
+<div class="bar"><span>最速</span><span id="rb">--</span></div>
+<p class="help">色が黄色に変わった瞬間にタップ。早すぎるとやり直しです。</p>
+<button class="big" id="rbtn">タップでスタート</button>
+</div>
+<div id="wbox" hidden>
+<div class="bar"><span>お題 <b id="wtar">--</b></span><span>最小誤差 <span id="wbest">--</span></span></div>
+<p class="help">お題の秒数ぴったりで止めてください。7秒を過ぎると数字が消えます。</p>
+<div id="wdis" style="font-size:56px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:10px 0">0.00</div>
+<button class="big" id="wbtn" style="min-height:140px">スタート</button>
+</div>
+</section>
+
+<section class="panel" id="m" hidden>
+<div class="bar"><span>残り <b id="mt">30</b>秒</span><span>得点 <b id="ms">0</b>（最高 <span id="mb">0</span>）</span></div>
+<p class="help">⭐を叩くと+1、💣を叩くと−2です。</p>
+<div class="lv" id="mlv"></div>
+<div class="grid g3" id="mg"></div>
+<button class="start" id="mstart">スタート</button>
+</section>
+
+<section class="panel" id="n" hidden>
+<div class="bar"><span>次は <b id="nx">1</b></span><span>タイム <b id="nt">0.00</b>秒（最速 <span id="nb">--</span>）</span></div>
+<p class="help">1から16まで順番にタップ。</p>
+<div class="lv" id="nlv"></div>
+<div class="grid" id="ng"></div>
+<button class="start" id="nstart">シャッフルしてスタート</button>
+</section>
+
+<section class="panel" id="s" hidden>
+<div class="bar"><span>クリア段階 <b id="sl">0</b></span><span>最高 <span id="sbest">0</span></span></div>
+<p class="help">光った順番を覚えて、同じ順にタップ。段階ごとに1つ増えます。</p>
+<div class="grid g2">
+<button class="pad" style="--c:var(--coral)" aria-label="赤"></button>
+<button class="pad" style="--c:var(--sun)" aria-label="黄"></button>
+<button class="pad" style="--c:var(--teal)" aria-label="緑"></button>
+<button class="pad" style="--c:#5b8def" aria-label="青"></button>
+</div>
+<button class="start" id="sstart">スタート</button>
+</section>
+
+<section class="panel" id="c" hidden>
+<div class="bar"><span>手数 <b id="cmv">0</b></span><span>最少 <span id="cbest">--</span></span></div>
+<p class="help">同じ絵柄のペアを少ない手数で全部そろえます。</p>
+<div class="lv" id="clv"></div>
+<div class="grid g4" id="cg"></div>
+<button class="start" id="cstart">シャッフルしてやり直し</button>
+</section>
+
+<section class="panel" id="h" hidden>
+<div class="bar"><span>得点 <b id="htr">0</b></span><span>最高 <span id="hbest">0</span></span></div>
+<div class="lv" id="lv"></div>
+<p class="help" id="lvinfo" style="margin:0 0 8px"></p>
+<p class="help">出題された言葉に合う絵文字を選んでください。ヒントや間違いで得点が下がります。</p>
+<div id="emo" style="font-size:34px;font-weight:700;text-align:center;margin:8px 0" aria-live="polite"></div>
+<p id="qh" style="text-align:center;font-weight:700;letter-spacing:.2em;min-height:1.6em;margin:0 0 12px"></p>
+<div class="grid g4" id="opts"></div>
+<button class="start" id="hhint">ヒントを見る（ジャンル → 不正解を消す）</button>
+<p class="help" id="hl" style="text-align:center;margin:12px 0 0"></p>
+<button class="start" id="hnew">スキップ（答えを見る）</button>
+</section>
+
+<section class="panel" id="t" hidden>
+<div class="bar"><span>タイム <b id="tt">0.0</b>秒　ミス <b id="tms">0</b></span><span>最速 <span id="tbest">--</span></span></div>
+<div class="lv" id="tlv"></div>
+<p class="help" id="tinfo" style="margin:0 0 8px"></p>
+<div id="tk" style="font-size:32px;font-weight:700;text-align:center;margin:8px 0;min-height:1.4em"></div>
+<p id="tr" style="text-align:center;font-weight:700;font-size:22px;letter-spacing:.1em;min-height:1.6em;margin:0 0 12px;word-break:break-all"></p>
+<div class="row tbox"><div id="tout" class="tout"></div><input id="tin" type="password" name="x-typing" inputmode="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="ローマ字で入力" placeholder="ここに打った文字が出ます" ></div>
+<button class="start" id="tstart">スタート</button>
+</section>
+
+<section class="panel" id="p" hidden>
+<div class="bar"><span>手数 <b id="pm">0</b></span><span>最少 <span id="pb">--</span></span></div>
+<div class="lv" id="plv"></div>
+<p class="help">空きマスの隣のタイルをタップして、1から順に並べてください。</p>
+<div class="grid" id="pg"></div>
+<button class="start" id="pstart">シャッフルしてやり直し</button>
+</section>
+
+<section class="panel" id="d" hidden>
+<div class="bar"><span>残り <b id="dtm">30</b>秒　得点 <b id="dt">0</b></span><span>最高 <span id="db">0</span></span></div>
+<div class="lv" id="dlv"></div>
+<p class="help"></p>
+<canvas id="dc" width="320" height="440" style="display:block;width:100%;max-width:360px;margin:0 auto;border:3px solid var(--ink);border-radius:14px;touch-action:none;background:var(--bg)"></canvas>
+<button class="start" id="dstart">スタート</button>
+</section>
+
+<p class="msg" id="msg" aria-live="polite"></p>
+<p style="text-align:center;margin:28px 0 0"><button class="snd" id="rst">全ゲームの記録をリセット</button></p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const store={get(k){try{const v=localStorage.getItem(k);return v===null?null:parseFloat(v)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const msg=t=>$('msg').textContent=t;
+
+/* sound (Web Audio, no files) */
+let AC=null,soundOn=store.get('snd')!==0;
+function tone(f,d=.12,type='square',v=.08,delay=0){
+  if(!soundOn)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
+    const t=AC.currentTime+delay,o=AC.createOscillator(),g=AC.createGain();
+    o.type=type;o.frequency.value=f;
+    g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);
+  }catch(e){}
+}
+const sfx={
+  ok:()=>tone(880,.1,'triangle',.12),
+  bad:()=>tone(120,.25,'sawtooth',.1),
+  go:()=>tone(1046,.18,'square',.08),
+  wait:()=>tone(330,.08,'triangle',.1),
+  win:()=>[523,659,784,1046].forEach((f,i)=>tone(f,.15,'triangle',.12,i*.1)),
+  tick:n=>tone(400+n*30,.06,'triangle',.12)
+};
+const sb=$('snd');
+function showSnd(){sb.textContent=soundOn?'🔊 サウンド ON':'🔇 サウンド OFF';sb.setAttribute('aria-pressed',soundOn)}
+sb.onclick=()=>{soundOn=!soundOn;store.set('snd',soundOn?1:0);showSnd();sfx.ok()};
+showSnd();
+
+/* tabs */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['r','m','n','s','c','h','t','p','d'].forEach(k=>$(k).hidden=k!==b.dataset.t);
+  stopMole();simonStop();qStop();tStop();wStop();rStop();dStop();if(nRun)nLv(nl);if(b.dataset.t!=='t')tin.blur();msg('');if(b.dataset.t==='h')qnew();if(b.dataset.t==='t')tin.focus();
+});
+
+/* reaction */
+let rs='idle',rt,rstart;
+const rbtn=$('rbtn');
+const rbest=store.get('rbest');if(rbest)$('rb').textContent=rbest+' ms';
+rbtn.onclick=()=>{
+  if(rs==='idle'){
+    rs='wait';rbtn.className='big wait';rbtn.textContent='まだ…';msg('');sfx.wait();
+    rt=setTimeout(()=>{rs='go';rbtn.className='big go';rbtn.textContent='今！';rstart=performance.now();sfx.go()},1500+Math.random()*2500);
+  }else if(rs==='wait'){
+    clearTimeout(rt);rs='idle';rbtn.className='big';rbtn.textContent='早すぎ！もう一度タップ';sfx.bad();
+  }else{
+    const ms=Math.round(performance.now()-rstart);rs='idle';rbtn.className='big';
+    rbtn.textContent=ms+' ms（もう一度タップ）';sfx.ok();
+    const b=store.get('rbest');
+    if(b===null||ms<b){store.set('rbest',ms);$('rb').textContent=ms+' ms';msg('自己ベスト更新！');sfx.win()}
+    else msg(ms<250?'かなり速いです':ms<350?'平均的です':'もう少し伸ばせます');
+  }
+};
+
+/* mole */
+const mg=$('mg');let cells=[];
+for(let i=0;i<9;i++){const c=document.createElement('button');c.className='cell hole';c.setAttribute('aria-label','穴'+(i+1));mg.appendChild(c);cells.push(c)}
+let mScore=0,mLeft=0,mTick,mSpawn,mActive=false;
+const gb=(key,k)=>{const v=store.get(key+k);return v!==null?v:(k===1?store.get(key):null)};
+const ML=[{u0:800,uv:400,g0:250,gv:300,bomb:.1,d:'ゆっくり出ます。💣は10%。'},{u0:500,uv:400,g0:150,gv:250,bomb:.2,d:'💣は20%。'},{u0:300,uv:300,g0:80,gv:170,bomb:.3,d:'素早く出ます。💣は30%。'}];
+let ml=+(store.get('mlv')||1);
+function mLv(k){
+  stopMole();ml=k;store.set('mlv',k);
+  $('mb').textContent=gb('mbest',k)||0;$('ms').textContent=0;$('mt').textContent=30;
+  document.querySelector('#m .help').textContent='⭐を叩くと+1、💣を叩くと-2。'+ML[k].d;msg('');
+}
+mkLv('mlv',['簡単','普通','難しい'],ml,mLv);mLv(ml);
+cells.forEach(c=>c.onclick=()=>{
+  if(!mActive||!c.classList.contains('up'))return;
+  const bm=c.classList.contains('bomb');mScore+=bm?-2:1;bm?sfx.bad():sfx.ok();
+  c.className='cell hole';c.textContent='';$('ms').textContent=mScore;
+});
+function clear(){cells.forEach(c=>{c.className='cell hole';c.textContent=''})}
+function spawn(){
+  if(!mActive)return;
+  clear();
+  const M=ML[ml],c=cells[Math.floor(Math.random()*9)],bomb=Math.random()<M.bomb;
+  c.className='cell hole up'+(bomb?' bomb':'');c.textContent=bomb?'💣':'⭐';
+  mSpawn=setTimeout(()=>{c.className='cell hole';c.textContent='';mSpawn=setTimeout(spawn,M.g0+Math.random()*M.gv)},M.u0+Math.random()*M.uv);
+}
+function stopMole(){mActive=false;clearInterval(mTick);clearTimeout(mSpawn);clear()}
+$('mstart').onclick=()=>{
+  stopMole();mScore=0;mLeft=30;mActive=true;$('ms').textContent=0;$('mt').textContent=30;msg('');sfx.go();
+  spawn();
+  mTick=setInterval(()=>{
+    mLeft--;$('mt').textContent=mLeft;
+    if(mLeft<=0){
+      stopMole();
+      const b=gb('mbest',ml)||0;sfx.win();
+      if(mScore>b){store.set('mbest'+ml,mScore);$('mb').textContent=mScore;msg('終了！'+mScore+'点、ハイスコア更新です')}
+      else msg('終了！'+mScore+'点');
+    }
+  },1000);
+};
+
+/* number tap */
+const ng=$('ng');let next=1,t0,nTick,nRun=false;
+const NN=[3,4,5];let nl=+(store.get('nlv')||1);
+const nbv=k=>k===2?store.get('nbest2s'):gb('nbest',k);
+function nLv(k){
+  clearInterval(nTick);nRun=false;nl=k;store.set('nlv',k);
+  const b=nbv(k);$('nb').textContent=b!==null?(+b).toFixed(2):'--';
+  $('nt').textContent='0.00';$('nx').textContent=1;ng.innerHTML='';msg('');
+  document.querySelector('#n .help').textContent='1から'+(NN[k]*NN[k])+'まで順番にタップ。'+(k===2?'タップするたびに残りの数字がシャッフルされます。':'');
+}
+mkLv('nlv',['簡単 3×3','普通 4×4','難しい 5×5'],nl,nLv);nLv(nl);
+$('nstart').onclick=()=>{
+  clearInterval(nTick);ng.innerHTML='';next=1;nRun=true;$('nx').textContent=1;$('nt').textContent='0.00';msg('');
+  const N2=NN[nl]*NN[nl];ng.style.gridTemplateColumns='repeat('+NN[nl]+',1fr)';
+  const nums=[...Array(N2).keys()].map(i=>i+1).sort(()=>Math.random()-.5);
+  const order=[];
+  const reshuffle=()=>{
+    const idx=order.map((b,i)=>b.classList.contains('done')?-1:i).filter(i=>i>=0);
+    const rem=idx.map(i=>order[i]).sort(()=>Math.random()-.5);
+    idx.forEach((i,j)=>{order[i]=rem[j]});
+    order.forEach(b=>ng.appendChild(b));
+  };
+  nums.forEach(n=>{
+    const b=document.createElement('button');b.className='cell num';b.textContent=n;b.style.fontSize=NN[nl]>4?'18px':'24px';
+    b.onclick=()=>{
+      if(!nRun)return;if(n!==next){sfx.bad();return}
+      if(n===1)t0=performance.now(),nTick=setInterval(()=>$('nt').textContent=((performance.now()-t0)/1000).toFixed(2),50);
+      b.classList.add('done');sfx.tick(n);next++;if(nl===2&&next<=N2)reshuffle();$('nx').textContent=next>N2?'—':next;
+      if(next>N2){
+        clearInterval(nTick);nRun=false;sfx.win();
+        const t=(performance.now()-t0)/1000;$('nt').textContent=t.toFixed(2);
+        const best=nbv(nl);
+        if(best===null||t<best){store.set(nl===2?'nbest2s':'nbest'+nl,t.toFixed(2));$('nb').textContent=t.toFixed(2);msg('最速記録を更新しました')}
+        else msg(t.toFixed(2)+'秒でクリアです');
+      }
+    };
+    ng.appendChild(b);order.push(b);
+  });
+};
+/* simon */
+const pads=[...document.querySelectorAll('.pad')],SF=[262,330,392,523];
+let seq=[],si=0,sAcc=false,sT=[];
+$('sbest').textContent=store.get('sbest')||0;
+function flash(i){pads[i].classList.add('lit');tone(SF[i],.3,'triangle',.15);setTimeout(()=>pads[i].classList.remove('lit'),300)}
+function simonStop(){sT.forEach(clearTimeout);sT=[];sAcc=false}
+function addStep(){
+  sAcc=false;seq.push(Math.floor(Math.random()*4));msg('見てください');
+  seq.forEach((p,i)=>sT.push(setTimeout(()=>flash(p),500+i*600)));
+  sT.push(setTimeout(()=>{sAcc=true;si=0;msg('あなたの番です')},500+seq.length*600));
+}
+$('sstart').onclick=()=>{simonStop();seq=[];$('sl').textContent=0;addStep()};
+pads.forEach((p,i)=>p.onclick=()=>{
+  if(!sAcc)return;flash(i);
+  if(i===seq[si]){si++;if(si===seq.length){sAcc=false;$('sl').textContent=seq.length;sT.push(setTimeout(addStep,800))}}
+  else{sAcc=false;const lv=seq.length-1;sfx.bad();const b=store.get('sbest')||0;
+    if(lv>b){store.set('sbest',lv);$('sbest').textContent=lv;msg('ミス！'+lv+'段階、最高記録です')}else msg('ミス！'+lv+'段階まで成功')}
+});
+
+/* match */
+let cf=null,cl=false,cm=0,cd=0;
+const cg=$('cg');
+const CL=[{pairs:6,cols:4,flip:1000},{pairs:8,cols:4,flip:800},{pairs:12,cols:6,flip:550}];
+let cv=+(store.get('clv')||1);
+{const b=gb('cbest',cv);$('cbest').textContent=b!==null?b:'--'}
+function cstart(){
+  cg.innerHTML='';cf=null;cl=false;cm=0;cd=0;$('cmv').textContent=0;msg('');
+  const e=['🍎','🐱','🚀','🎸','🌈','🍣','⚽','🐙'];
+  const E=e.concat(['🍩','🌸','🦊','⭐']).slice(0,CL[cv].pairs);cg.style.gridTemplateColumns='repeat('+CL[cv].cols+',1fr)';
+  [...E,...E].sort(()=>Math.random()-.5).forEach(v=>{
+    const b=document.createElement('button');b.className='cell card';b.textContent='?';b.dataset.v=v;if(CL[cv].cols>4)b.style.fontSize='24px';
+    b.onclick=()=>{
+      if(cl||b.classList.contains('open'))return;
+      b.classList.add('open');b.textContent=v;sfx.tick(2);
+      if(!cf){cf=b;return}
+      cm++;$('cmv').textContent=cm;
+      if(cf.dataset.v===v){cf=null;cd++;sfx.ok();
+        if(cd===CL[cv].pairs){sfx.win();const bs=gb('cbest',cv);
+          if(bs===null||cm<bs){store.set('cbest'+cv,cm);$('cbest').textContent=cm;msg(cm+'手でクリア、最少記録です')}else msg(cm+'手でクリアです')}
+      }else{cl=true;const a=cf;cf=null;
+        setTimeout(()=>{a.classList.remove('open');a.textContent='?';b.classList.remove('open');b.textContent='?';cl=false},CL[cv].flip)}
+    };
+    cg.appendChild(b);
+  });
+}
+$('cstart').onclick=cstart;
+mkLv('clv',['簡単 12枚','普通 16枚','難しい 24枚'],cv,k=>{cv=k;store.set('clv',k);const b=gb('cbest',k);$('cbest').textContent=b!==null?b:'--';cstart()});
+cstart();
+
+/* emoji quiz */
+const QZ=[
+['🍣','すし|寿司|おすし','たべもの'],['🍙','おにぎり|おむすび','たべもの'],['🍜','らーめん','たべもの'],['🍕','ぴざ','たべもの'],['🍔','はんばーがー','たべもの'],
+['🍟','ふらいどぽてと|ふらいぽてと','たべもの'],['🍩','どーなつ|どうなつ','たべもの'],['🍎','りんご|林檎','たべもの'],['🍌','ばなな','たべもの'],['🍇','ぶどう|葡萄','たべもの'],
+['🍓','いちご|苺','たべもの'],['🍉','すいか|西瓜','たべもの'],['🍑','もも|桃','たべもの'],['🍋','れもん|櫠檬','たべもの'],['🥕','にんじん|人参','たべもの'],
+['🍆','なす|茄子','たべもの'],['🌽','とうもろこし|こーん','たべもの'],['🍞','ぱん','たべもの'],['🧀','ちーず','たべもの'],['🥚','たまご|卵|玉子','たべもの'],
+['🎂','けーき|ばーすでーけーき|たんじょうびけーき','たべもの'],['🍎🥧','あっぷるぱい','たべもの'],
+['🐶','いぬ|犬','どうぶつ'],['🐱','ねこ|猫','どうぶつ'],['🐭','ねずみ|鼠','どうぶつ'],['🐰','うさぎ|兔','どうぶつ'],['🐻','くま|熊','どうぶつ'],
+['🐼','ぱんだ','どうぶつ'],['🐘','ぞう|象','どうぶつ'],['🦒','きりん','どうぶつ'],['🐒','さる|猿','どうぶつ'],['🐧','ぺんぎん','どうぶつ'],
+['🐢','かめ|什','どうぶつ'],['🐍','へび|蛇','どうぶつ'],['🐙','たこ|蛸','いきもの'],['🦀','かに|蟹','いきもの'],['🐟','さかな|魚','いきもの'],
+['🐬','いるか','いきもの'],['🐝','はち|蜂|みつばち','いきもの'],['🦋','ちょうちょ|ちょう|蝶','いきもの'],
+['🌸','さくら|桜|はな|花','しょくぶつ'],['🌻','ひまわり|向日葵|はな|花','しょくぶつ'],['🌹','ばら|薇薇|はな|花','しょくぶつ'],
+['🌈','にじ|虹','しぜん'],['☀️','たいよう|太陽|おひさま','しぜん'],['🌙','つき|月|おつきさま','しぜん'],['⭐','ほし|星','しぜん'],
+['⛄','ゆきだるま|雪だるま|雪達磨','しぜん'],['🌋','かざん|火山','しぜん'],['🗻','ふじさん|富士山','しぜん'],
+['🚗','くるま|車|じどうしゃ|自動車','のりもの'],['🚄','しんかんせん|新幹線','のりもの'],['✈️','ひこうき|飛行機','のりもの'],
+['🚲','じてんしゃ|自転車','のりもの'],['🚢','ふね|船','のりもの'],['🚀','ろけっと','のりもの'],['🔥🚒','しょうぼうしゃ|消防車','のりもの'],
+['🏠','いえ|家|うち','たてもの'],['🏫','がっこう|学校','たてもの'],['🏥','びょういん|病院','たてもの'],['🐶🏠','いぬごや|犬小屋','もの'],
+['⏰','とけい|時計|めざましどけい|目覚まし時計','もの'],['📚','ほん|本','もの'],['📷','かめら|カメラ','もの'],['📱','すまほ|けいたいでんわ|攜帯電話','もの'],
+['🔑','かぎ|鍵','もの'],['👑','おうかん|王冠|かんむり','もの'],['⚽','さっかーぼーる|さっかー','もの'],
+['🎸','ぎたー','がっき'],['🎹','ぴあの','がっき'],['🥁','どらむ|だいこ','がっき'],['🎺','とらんちっと|らっぱ','がっき'],['🍑👦','ももたろう|桃太郎','むかしばなし'],
+['🍍','ぱいなっぷる|パイン','たべもの',1],['🥭','まんごー','たべもの',1],['🍠','さつまいも|薩摩芋|さつま芋','たべもの',1],['🥔','じゃがいも|馬鈴薯|じゃが芋','たべもの',1],['🍄','きのこ|茸','たべもの',1],
+['🌰','くり|栗','たべもの',1],['🍯','はちみつ|蜂蜜','たべもの',1],['🧅','たまねぎ|玉葱|玉ねぎ','たべもの',1],['🥒','きゅうり|胡瓜','たべもの',1],
+['🦊','きつね|狐','どうぶつ',1],['🐺','おおかみ|狼','どうぶつ',1],['🦁','らいおん','どうぶつ',1],['🐯','とら|虎','どうぶつ',1],['🐴','うま|馬','どうぶつ',1],
+['🐮','うし|牛','どうぶつ',1],['🐷','ぶた|豚','どうぶつ',1],['🐔','にわとり|鶏','どうぶつ',1],['🐸','かえる|蛙','どうぶつ',1],
+['🐋','くじら|鯨','いきもの',1],['🦈','さめ|鮫','いきもの',1],['🦐','えび|海老','いきもの',1],
+['🦑','いか|烏賊','いきもの',2],['🐡','ふぐ|河豚','いきもの',2],['🦉','ふくろう|梟','どうぶつ',2],['🐊','わに|鰐','どうぶつ',2],['🐪','らくだ|駱駝','どうぶつ',2],
+['🦇','こうもり|蝙蝠','どうぶつ',2],['🐌','かたつむり|蝸牛|でんでんむし','いきもの',2],['🦎','とかげ|蜥蜴','いきもの',2],['🦂','さそり|蠍','いきもの',2],
+['🦔','はりねずみ|針鼠','どうぶつ',2],['🦚','くじゃく|孔雀','どうぶつ',2],['🦢','はくちょう|白鳥','どうぶつ',2],['🦅','わし|鷲','どうぶつ',2],
+['🐜','あり|蟻','いきもの',2],['🐞','てんとうむし|天道虫','いきもの',2],['🦗','こおろぎ|蟋蟀','いきもの',2],['🦜','おうむ|鸚鵡|いんこ','どうぶつ',2],
+['🦩','ふらみんご|紅鶴','どうぶつ',2],['🦦','かわうそ|川獺','どうぶつ',2],['🦟','か|蚊','いきもの',2],
+['🧲','じしゃく|磁石|まぐねっと','もの',3],['🔭','ぼうえんきょう|望遠鏡','もの',3],['🧭','らしんばん|羅針盤|こんぱす','もの',3],['⚓','いかり|錨','もの',3],
+['🏮','ちょうちん|提灯','もの',3],['🎐','ふうりん|風鈴','もの',3],['🧹','ほうき|箒','もの',3],['🔨','かなづち|金槌|とんかち|はんまー','もの',3],
+['🪚','のこぎり|鋸','もの',3],['🪑','いす|椅子','もの',3],['🥟','ぎょうざ|餃子','たべもの',3],['🍡','だんご|団子','たべもの',3],
+['🍘','せんべい|煎餅','たべもの',3],['🦪','かき|牡蠣','たべもの',3],['🥐','くろわっさん','たべもの',3],['🥨','ぷりっつぇる|ぷれっつぇる','たべもの',3],
+['🐆','ひょう|豹','どうぶつ',3],['🦓','しまうま|縞馬','どうぶつ',3],['🦛','かば|河馬','どうぶつ',3],['🦏','さい|犀','どうぶつ',3],['🦭','あざらし|海豹','いきもの',3]
+];
+const toH=s=>s.trim().replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));
+let qcur=null,hv=0,score=0,qlast=-1,qlock=false,bag=[],qwrong=0,qrev=false;
+function nextQ(){
+  if(!bag.length){
+    bag=QZ.map((_,i)=>i).filter(i=>TIER[lvl].includes(QZ[i][3]||0));
+    for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]]}
+    if(bag[bag.length-1]===qlast)[bag[0],bag[bag.length-1]]=[bag[bag.length-1],bag[0]];
+  }
+  return bag.pop();
+}
+const LV=[
+ {n:'簡単',opt:4,same:0,ht:['g','x'],time:0,base:10,info:'ひらがなの言葉／4択／ヒント2回'},
+ {n:'中級',opt:4,same:1,ht:['g','x'],time:0,base:15,info:'漢字の言葉／4択（似たジャンル中心）／ヒント2回'},
+ {n:'上級',opt:6,same:1,ht:['x'],time:15,base:20,info:'難しい漢字／6択／ヒント1回／1問15秒'},
+ {n:'超上級',opt:8,same:1,ht:[],time:8,base:30,info:'難読・難問／8択／ヒントなし／1問8秒'}
+];
+let lvl=+(store.get('qlv')||0),L=LV[lvl],qtm=null,QH='';
+const TIER=[[0],[0,1],[1,2],[2,3]];
+const EX=[['🐻','🐼'],['🐟','🐡','🦈'],['🐬','🐋'],['🥔','🍟'],['🍞','🥐','🥨'],['🌋','🗻'],['☀️','⭐'],['🐱','🦁','🐯','🐆'],['🐶','🐺']];
+const KJ=/[\u4e00-\u9fff]/;
+function clash(a,b){const A=a[1].split('|'),B=b[1].split('|');return A.some(x=>B.some(y=>{if(x===y)return true;const s=x.length<y.length?x:y,l=s===x?y:x;return l.includes(s)&&(s.length>=2||KJ.test(s))}))}
+function disp(q){const a=q[1].split('|');if(lvl>=1){const k=a.find(x=>/[\u4e00-\u9fff]/.test(x));if(k)return k}return a[0]}
+function qClear(){clearInterval(qtm);qtm=null}
+function qStop(){qClear()}
+function qStart(){
+  qClear();
+  if(!L.time||$('h').hidden)return;
+  const end=Date.now()+L.time*1000;
+  const tick=()=>{
+    const r=Math.ceil((end-Date.now())/1000);
+    if(r<=0){qClear();qTimeUp();return}
+    $('qh').textContent=QH+'　残り'+r+'秒';
+  };
+  tick();qtm=setInterval(tick,250);
+}
+function qTimeUp(){
+  if(qlock)return;qlock=true;
+  [...$('opts').children].forEach(b=>{if(b.textContent===qcur[0])b.style.background='var(--sun)'});
+  qrev=true;$('hnew').textContent='次の問題へ';msg('時間切れ！答え：'+qcur[0]+'（もう一度押すと次へ）');sfx.bad();
+}
+function setLv(k){
+  lvl=k;L=LV[k];bag=[];store.set('qlv',k);score=0;$('htr').textContent=0;
+  $('hbest').textContent=store.get('qbest'+k)||0;
+  [...$('lv').children].forEach((b,j)=>b.setAttribute('aria-pressed',j===k));
+  $('lvinfo').textContent=L.info;$('hhint').style.display=L.ht.length?'':'none';
+}
+LV.forEach((l,k)=>{const b=document.createElement('button');b.textContent=l.n;b.onclick=()=>{setLv(k);qnew()};$('lv').appendChild(b)});
+setLv(lvl);
+function qnew(){
+  const i=nextQ();
+  qlast=i;qcur=QZ[i];hv=0;qlock=false;qrev=false;$('hnew').textContent='スキップ（答えを見る）';
+  qwrong=0;
+  const ans=new Set(qcur[1].split('|').map(toH));
+  const ok=QZ.filter((q,j)=>j!==i&&!q[1].split('|').some(x=>ans.has(toH(x)))&&!q[0].includes(qcur[0])&&!qcur[0].includes(q[0])&&!clash(qcur,q)&&!EX.some(g=>g.includes(qcur[0])&&g.includes(q[0])));
+  const sh=a=>a.sort(()=>Math.random()-.5);
+  const ds=(L.same?[...sh(ok.filter(q=>q[2]===qcur[2])),...sh(ok.filter(q=>q[2]!==qcur[2]))]:sh(ok.filter(q=>q[2]!==qcur[2]))).slice(0,L.opt-1);
+  const opts=[qcur,...ds].sort(()=>Math.random()-.5);
+  $('emo').textContent=disp(qcur);
+  QH='この言葉を表す絵文字はどれ？';$('qh').textContent=QH;$('hl').textContent='';msg('');qStart();
+  const o=$('opts');o.innerHTML='';o.className='grid g'+(L.opt===6?3:4);
+  opts.forEach(q=>{const b=document.createElement('button');b.className='cell card';b.style.fontSize=L.opt>4?'30px':'36px';b.textContent=q[0];b.onclick=()=>qpick(q,b);o.appendChild(b)});
+}
+function qhint(){
+  if(!qcur||qlock||hv>=L.ht.length)return;
+  const t=L.ht[hv];hv++;sfx.tick(1);
+  if(t==='g')$('hl').textContent='ジャンル：'+qcur[2];
+  else{
+    [...$('opts').children].filter(b=>b.textContent!==qcur[0]&&!b.disabled).sort(()=>Math.random()-.5).slice(0,L.opt/2).forEach(b=>{b.disabled=true;b.style.opacity='.25'});
+    $('hl').textContent=($('hl').textContent?$('hl').textContent+'／':'')+'不正解を消しました';
+  }
+}
+function qpick(q,b){
+  if(qlock||b.disabled)return;
+  if(q===qcur){
+    qlock=true;qClear();const p=Math.max(1,L.base-Math.round(L.base*.3)*(hv+qwrong));score+=p;$('htr').textContent=score;sfx.win();
+    b.style.background='var(--teal)';
+    const bs=store.get('qbest'+lvl)||0;if(score>bs){store.set('qbest'+lvl,score);$('hbest').textContent=score}
+    msg('正解！ +'+p+'点');setTimeout(qnew,1200);
+  }else{qwrong++;b.disabled=true;b.style.opacity='.25';sfx.bad();msg('ちがいます。もう一度選んでください')}
+}
+function qskip(){
+  if(qrev){qnew();return}
+  if(qlock)return;qlock=true;qrev=true;qClear();$('hnew').textContent='次の問題へ';
+  [...$('opts').children].forEach(b=>{if(b.textContent===qcur[0])b.style.background='var(--sun)'});
+  msg('答え：'+qcur[0]+'（もう一度押すと次へ）');sfx.bad();
+}
+$('hhint').onclick=qhint;$('hnew').onclick=qskip;qnew();
+
+/* shared level buttons */
+function mkLv(id,names,cur,fn){const c=$(id);names.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.setAttribute('aria-pressed',k===cur);b.onclick=()=>{[...c.children].forEach((x,j)=>x.setAttribute('aria-pressed',j===k));fn(k)};c.appendChild(b)})}
+
+/* typing */
+const TW=[
+[['ねこ','neko'],['いぬ','inu'],['やま','yama'],['うみ','umi'],['さかな','sakana'],['ほし','hoshi'],['つき','tsuki'],['はな','hana'],['そら','sora'],['ひる','hiru'],['あめ','ame'],['ゆき','yuki'],['くも','kumo'],['かぜ','kaze'],['みず','mizu'],['くるま','kuruma'],['てんき','tenki'],['たまご','tamago'],['すいか','suika'],['さくら','sakura'],['さる','saru'],['とり','tori'],['かお','kao'],['あし','ashi'],['てがみ','tegami']],
+[['りんご','ringo'],['ともだち','tomodachi'],['ひこうき','hikouki'],['おにぎり','onigiri'],['しんかんせん','shinkansen'],['とうきょう','toukyou'],['はなび','hanabi'],['くだもの','kudamono'],['やきゅう','yakyuu'],['かみなり','kaminari'],['たいよう','taiyou'],['でんわ','denwa'],['すいえい','suiei'],['ふうせん','fuusen'],['みかん','mikan'],['ひまわり','himawari'],['とけい','tokei'],['えんぴつ','enpitsu'],['うさぎ','usagi'],['かたつむり','katatsumuri'],['きりん','kirin'],['ぺんぎん','pengin'],['まくら','makura'],['ゆうやけ','yuuyake'],['のりもの','norimono']],
+[['ありがとうございます','arigatougozaimasu'],['おはようございます','ohayougozaimasu'],['いただきます','itadakimasu'],['ごちそうさまでした','gochisousamadeshita'],['おやすみなさい','oyasuminasai'],['よろしくおねがいします','yoroshikuonegaishimasu'],['すみません','sumimasen'],['さようなら','sayounara'],['おつかれさまです','otsukaresamadesu'],['ちょっとまって','chottomatte'],['いってきます','ittekimasu'],['ただいま','tadaima'],['おかえりなさい','okaerinasai'],['おめでとう','omedetou'],['おねがいします','onegaishimasu'],['しつれいします','shitsureishimasu'],['はじめまして','hajimemashite'],['わかりました','wakarimashita'],['だいじょうぶ','daijoubu'],['たのしかった','tanoshikatta'],['おいしかった','oishikatta'],['がんばります','ganbarimasu'],['またあした','mataashita'],['ありがとうございました','arigatougozaimashita'],['おげんきですか','ogenkidesuka']]
+];
+const ALT={shi:['shi','si'],chi:['chi','ti'],tsu:['tsu','tu'],fu:['fu','hu'],ji:['ji','zi'],sha:['sha','sya'],shu:['shu','syu'],sho:['sho','syo'],cha:['cha','tya','cya'],chu:['chu','tyu','cyu'],cho:['cho','tyo','cyo'],ja:['ja','zya','jya'],ju:['ju','zyu','jyu'],jo:['jo','zyo','jyo'],N:['n','nn']};
+function tvars(r){
+  const tk=r.match(/shi|chi|tsu|sha|shu|sho|cha|chu|cho|ja|ju|jo|ji|fu|n(?![aiueoy])|./g);
+  let out=[''];
+  tk.forEach(t=>{const alts=t==='n'?ALT.N:(ALT[t]||[t]);out=out.flatMap(o=>alts.map(a=>o+a))});
+  return out;
+}
+let tvs=[];
+let tl=+(store.get('tlv')||0),tq=[],tcur=null,tprev='',tmiss=0,tt0=0,ttm=null,tdone=0,trun=false,tskip=false;
+const tin=$('tin');
+let tbag=[[],[],[]],tlast='';
+function tDraw(){
+  let b=tbag[tl];
+  if(b.length<10){const rest=new Set(b);b=[...b,...TW[tl].map((_,i)=>i).filter(i=>!rest.has(i)).sort(()=>Math.random()-.5)]}
+  tq=b.slice(0,10).map(i=>TW[tl][i]);tbag[tl]=b.slice(10);
+}
+function tStop(){clearInterval(ttm);ttm=null;trun=false;$('tstart').textContent='スタート'}
+function tOut(){$('tout').textContent=tin.value||'ここにローマ字で入力';$('tout').style.opacity=tin.value?1:.45}
+function tShow(){tOut();
+  const t0=tin.value.toLowerCase(),t=/[^\x00-\x7f]/.test(t0)?'':t0,m=tvs.find(x=>x.startsWith(t))||tvs[0],p=$('tr');p.innerHTML='';p.style.color='';
+  const a=document.createElement('span');a.style.opacity='.35';a.textContent=m.slice(0,t.length);
+  p.append(a,m.slice(t.length));
+}
+function tIdle(){
+  tStop();tlast='';tin.value='';tOut();$('tk').textContent='';$('tr').textContent='スタートを押してください';
+  $('tt').textContent='0.0';$('tms').textContent=0;$('tbest').textContent=store.get('tbest'+tl)||'--';
+  $('tinfo').textContent=['短い単語','ふつうの単語','長い言葉・あいさつ'][tl]+'を10語。ミス1回で+1秒。ローマ字で入力（si・tyoなどもOK）。入力欄をタップすると英語キーボードが開きます。';msg('');
+}
+function tNext(){tcur=tq[tdone];tvs=tvars(tcur[1]);tin.value='';tprev='';$('tk').textContent=tcur[0]+'  ('+(tdone+1)+'/10)';tShow()}
+$('tstart').onclick=()=>{
+  if(trun){tIdle();return}
+  tStop();tDraw();
+  tmiss=0;tdone=0;tskip=false;trun=true;tlast='';$('tms').textContent=0;msg('');
+  tt0=performance.now();ttm=setInterval(()=>$('tt').textContent=((performance.now()-tt0)/1000).toFixed(1),100);
+  $('tstart').textContent='中断する';tNext();tin.focus();sfx.go();
+};
+const toHira=s=>s.replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));
+const PV={'か':'が','き':'ぎ','く':'ぐ','け':'げ','こ':'ご','さ':'ざ','し':'じ','す':'ず','せ':'ぜ','そ':'ぞ','た':'だ','ち':'ぢ','つ':'づっ','て':'で','と':'ど','は':'ばぱ','ひ':'びぴ','ふ':'ぶぷ','へ':'べぺ','ほ':'ぼぽ','や':'ゃ','ゆ':'ゅ','よ':'ょ','う':'ゔ'};
+function kanaOk(h){const t=tcur[0];if(t.startsWith(h))return true;const l=h.slice(-1),b=h.slice(0,-1);return (PV[l]||'').split('').some(x=>t.startsWith(b+x))}
+function tCheck(fin){
+  if(!trun)return;
+  let v=tin.value;
+  if(tlast){
+    if(v===tlast){tin.value='';return}
+    if(v.startsWith(tlast)){v=v.slice(tlast.length);tin.value=v}else if(fin)tlast='';
+  }
+  const kana=/[^\x00-\x7f]/.test(v);
+  if(!kana&&fin&&tskip&&v==='n'&&!tcur[1].startsWith('n')){tskip=false;tin.value='';return}
+  tskip=false;
+  const n=kana?toHira(v.replace(/\s/g,'')):v.toLowerCase();
+  const ok=kana?kanaOk(n):tvs.some(x=>x.startsWith(n));
+  if(!ok){
+    if(!fin){$('tr').style.color='var(--coral)';return}
+    tmiss++;$('tms').textContent=tmiss;sfx.bad();tin.value=tprev;tShow();return;
+  }
+  $('tr').style.color='';tprev=v;
+  if(kana?n===tcur[0]:tvs.includes(n)){
+    sfx.ok();tdone++;tskip=!kana&&tcur[1].endsWith('n');tlast=v;
+    if(tdone>=10){
+      tStop();const t=(performance.now()-tt0)/1000,sc=Math.round((t+tmiss)*10)/10;
+      $('tt').textContent=t.toFixed(1);tin.value='';$('tk').textContent='完了！';$('tr').textContent='';tlast='';tin.blur();tOut();
+      const b=store.get('tbest'+tl);sfx.win();
+      if(b===null||sc<b){store.set('tbest'+tl,sc);$('tbest').textContent=sc;msg('スコア'+sc+'秒、最速記録です')}
+      else msg('スコア'+sc+'秒（タイム'+t.toFixed(1)+'＋ミス'+tmiss+'）');
+    }else tNext();
+  }else tShow();
+}
+tin.oninput=e=>{tCheck(!e.isComposing);tOut()};
+tin.addEventListener('compositionend',()=>{tCheck(true);tOut()});
+
+/* slide puzzle */
+const PL=[3,4,5];
+let pn=+(store.get('plv')||0),pa=[],pmv=0,pdone=false;
+function pNb(e,n){const r=Math.floor(e/n),c=e%n,o=[];if(r>0)o.push(e-n);if(r<n-1)o.push(e+n);if(c>0)o.push(e-1);if(c<n-1)o.push(e+1);return o}
+function pRender(){
+  const n=PL[pn],g=$('pg');g.style.gridTemplateColumns='repeat('+n+',1fr)';g.innerHTML='';
+  pa.forEach((v,i)=>{
+    const b=document.createElement('button');b.className='cell num';b.style.fontSize=n>4?'18px':'24px';
+    if(v){b.textContent=v;b.onclick=()=>pMove(i)}else{b.style.visibility='hidden';b.disabled=true}
+    g.appendChild(b);
+  });
+}
+function pNew(){
+  const n=PL[pn];pa=[...Array(n*n-1).keys()].map(i=>i+1);pa.push(0);
+  let e=n*n-1,prev=-1;
+  for(let k=0;k<n*n*30;k++){const o=pNb(e,n).filter(x=>x!==prev),m=o[Math.floor(Math.random()*o.length)];[pa[e],pa[m]]=[pa[m],pa[e]];prev=e;e=m}
+  if(pa.filter((v,k)=>v!==(k<n*n-1?k+1:0)).length<Math.ceil(n*n*.8))return pNew();
+  pmv=0;pdone=false;$('pm').textContent=0;$('pb').textContent=store.get('pbest'+pn)||'--';msg('');pRender();
+}
+function pMove(i){
+  if(pdone)return;const n=PL[pn],e=pa.indexOf(0);
+  if(!pNb(e,n).includes(i))return;
+  [pa[e],pa[i]]=[pa[i],pa[e]];pmv++;$('pm').textContent=pmv;sfx.tick(1);pRender();
+  if(pa.every((v,k)=>v===(k<n*n-1?k+1:0))){
+    pdone=true;sfx.win();const b=store.get('pbest'+pn);
+    if(b===null||pmv<b){store.set('pbest'+pn,pmv);$('pb').textContent=pmv;msg(pmv+'手でクリア、最少記録です')}else msg(pmv+'手でクリアです');
+  }
+}
+$('pstart').onclick=pNew;
+
+/* stopwatch */
+const WT=[10,11,12,13,14,15,16,17,18,19,20,25];
+let wt=15,w0=0,wrun=false,wint=null;
+const wbtn=$('wbtn'),wdis=$('wdis');
+function wnew(){wt=WT[Math.floor(Math.random()*WT.length)];$('wtar').textContent=wt+'秒'}
+function wStop(){clearInterval(wint);wint=null;if(wrun){wrun=false;wbtn.textContent='スタート';wdis.textContent='0.00'}}
+function rStop(){clearTimeout(rt);rs='idle';rbtn.className='big';rbtn.textContent='タップでスタート'}
+let rm=+(store.get('rmode')||0);
+function setRm(k){rm=k;store.set('rmode',k);$('rbox').hidden=k!==0;$('wbox').hidden=k!==1;rStop();wStop();msg('')}
+mkLv('rmode',['反応速度','ぴったりストップ'],rm,setRm);setRm(rm);
+const wb0=store.get('wbest');if(wb0!==null)$('wbest').textContent=(wb0/1000).toFixed(3)+'秒';
+wbtn.onclick=()=>{
+  if(!wrun){
+    wrun=true;w0=performance.now();wbtn.textContent='ストップ';msg('');sfx.go();
+    wint=setInterval(()=>{const t=(performance.now()-w0)/1000;wdis.textContent=t<7?t.toFixed(2):'？？？'},30);
+  }else{
+    const t=(performance.now()-w0)/1000;
+    clearInterval(wint);wint=null;wrun=false;wbtn.textContent='スタート';wdis.textContent=t.toFixed(3);
+    const d=t-wt,a=Math.abs(d);
+    const rate=a<=.02?'神業です':a<=.1?'ほぼぴったりです':a<=.3?'惜しい':a<=1?'もう少し':'体内時計を鍛えましょう';
+    msg('お題'+wt+'秒 → '+t.toFixed(3)+'秒（'+(d>=0?'+':'')+d.toFixed(3)+'秒）'+rate);
+    const ms=Math.round(a*1000),b=store.get('wbest');
+    if(b===null||ms<b){store.set('wbest',ms);$('wbest').textContent=(ms/1000).toFixed(3)+'秒';sfx.win()}else sfx.ok();
+    wnew();
+  }
+};
+
+/* dodge */
+const DL=[
+ {s0:130,s1:230,i0:.9,i1:.45,g:2,d:'落ちてくる数・速さ：ゆっくり'},
+ {s0:170,s1:320,i0:.7,i1:.32,g:1.6,d:'落ちてくる数・速さ：ふつう'},
+ {s0:220,s1:420,i0:.5,i1:.22,g:1.4,d:'落ちてくる数・速さ：多くて速い'}
+];
+let dl=+(store.get('dlv')||1),dRun=false,dRaf=0,dObs=[],dP={x:160},dT=0,dStars=0,dSpawn=0,dLast=0,dDown=false,dLX=0,dKey={l:0,r:0},dCol={};
+const dc=$('dc'),dg=dc.getContext('2d'),DW=320,DH=440,DPY=DH-44;
+const DLIM=30;
+const dScore=()=>Math.floor(dT)+dStars*2;
+const dRem=()=>Math.max(0,Math.ceil(DLIM-dT));
+function dCss(){const s=getComputedStyle(document.documentElement);dCol={bg:s.getPropertyValue('--bg').trim()||'#e6f4ef',ink:s.getPropertyValue('--ink').trim()||'#1b2a49'}}
+function dDraw(t,lg){
+  dg.fillStyle=dCol.bg;dg.fillRect(0,0,DW,DH);
+  dg.textAlign='center';dg.textBaseline='middle';
+  dg.font='26px sans-serif';
+  dObs.forEach(o=>{
+    dg.beginPath();dg.arc(o.x,o.y,o.star?19:15,0,6.2832);
+    dg.fillStyle=o.star?'rgba(255,201,60,.45)':'rgba(255,60,90,.30)';dg.fill();
+    dg.lineWidth=2.5;dg.strokeStyle=o.star?'#ffb300':'#ff3b5c';dg.stroke();
+    dg.fillStyle=dCol.ink;dg.fillText(o.e,o.x,o.y);
+  });
+  dg.font='30px sans-serif';dg.fillText('🚀',dP.x,DPY);
+  if(lg){
+    dg.fillStyle='#ff3b5c';dg.font='bold 17px sans-serif';dg.fillText('✕ よける（当たるとゲームオーバー）',DW/2,90);
+    dg.font='28px sans-serif';dg.fillText('💣  🔥  🧨',DW/2,126);
+    dg.fillStyle='#d99a00';dg.font='bold 17px sans-serif';dg.fillText('◎ とる（+2点）',DW/2,184);
+    dg.font='28px sans-serif';dg.fillText('⭐',DW/2,220);
+    dg.fillStyle=dCol.ink;dg.font='bold 17px sans-serif';dg.fillText('制限時間'+DLIM+'秒　完走で+10点',DW/2,268);
+  }
+  if(dRun){
+    dg.fillStyle=dCol.ink;dg.font='bold 17px sans-serif';
+    dg.textAlign='left';dg.fillText('得点 '+dScore()+'  ⭐'+dStars,10,20);
+    dg.textAlign='right';dg.fillText('残り '+dRem()+'秒',DW-10,20);
+    dg.textAlign='center';
+  }
+  if(t){dg.fillStyle=dCol.ink;dg.font='bold 18px sans-serif';dg.fillText(t,DW/2,lg?DH/2+90:DH/2)}
+}
+function dStop(){dRun=false;cancelAnimationFrame(dRaf);dKey.l=0;dKey.r=0;dDown=false}
+function dEnd(h){
+  dStop();
+  const up=h==='time';
+  if(up){dT=DLIM;sfx.ok()}else sfx.bad();
+  const sc=dScore()+(up?10:0),b=store.get('dbl'+dl);
+  const head=up?'タイムアップ！完走ボーナス+10点。':'ゲームオーバー！'+h+'に当たりました。';
+  $('dt').textContent=sc;$('dtm').textContent=up?0:dRem();
+  if(b===null||sc>b){store.set('dbl'+dl,sc);$('db').textContent=sc;msg(head+sc+'点、最高記録です');sfx.win()}
+  else msg(head+sc+'点（⭐'+dStars+'個）');
+  dDraw(up?'タイムアップ！':'ゲームオーバー');$('dstart').textContent='もう一度';
+}
+function dStep(ts){
+  if(!dRun)return;
+  const dt=Math.min(.05,(ts-dLast)/1000||0);dLast=ts;
+  const L=DL[dl],f=Math.min(1,dT/DLIM);
+  dT+=dt;if(dT>=DLIM){dEnd('time');return}
+  dP.x=Math.max(16,Math.min(DW-16,dP.x+(dKey.r-dKey.l)*260*dt));
+  dSpawn-=dt;
+  if(dSpawn<=0){
+    dSpawn=L.i0+(L.i1-L.i0)*f;
+    const star=Math.random()<.12;
+    dObs.push({x:20+Math.random()*(DW-40),y:-20,e:star?'⭐':['💣','🔥','🧨'][Math.floor(Math.random()*3)],star,v:(L.s0+(L.s1-L.s0)*f)*(.85+Math.random()*.3)});
+  }
+  for(const o of dObs)o.y+=o.v*dt;
+  for(let i=dObs.length-1;i>=0;i--){
+    const o=dObs[i];
+    if(Math.hypot(o.x-dP.x,o.y-DPY)<(o.star?26:20)){
+      if(o.star){dStars++;sfx.tick(6);dObs.splice(i,1)}else{dEnd(o.e);return}
+    }else if(o.y>DH+20)dObs.splice(i,1);
+  }
+  $('dt').textContent=dScore();$('dtm').textContent=dRem();
+  dDraw();
+  dRaf=requestAnimationFrame(dStep);
+}
+$('dstart').onclick=()=>{
+  dStop();dCss();dObs=[];dP.x=DW/2;dT=0;dStars=0;dSpawn=.5;msg('');$('dtm').textContent=DLIM;$('dt').textContent=0;
+  dRun=true;dLast=performance.now();$('dstart').textContent='やり直す';
+  dRaf=requestAnimationFrame(dStep);
+};
+dc.addEventListener('pointerdown',e=>{if(!dRun)return;dDown=true;dLX=e.clientX;if(dc.setPointerCapture)dc.setPointerCapture(e.pointerId);e.preventDefault()});
+dc.addEventListener('pointermove',e=>{
+  if(!dDown||!dRun)return;
+  const r=dc.getBoundingClientRect();
+  dP.x=Math.max(16,Math.min(DW-16,dP.x+(e.clientX-dLX)*(DW/r.width)*DL[dl].g));dLX=e.clientX;e.preventDefault();
+});
+const dUp=()=>{dDown=false};
+dc.addEventListener('pointerup',dUp);dc.addEventListener('pointercancel',dUp);
+document.addEventListener('keydown',e=>{
+  if(!dRun||$('d').hidden)return;
+  if(e.key==='ArrowLeft'||e.key==='a'){dKey.l=1;e.preventDefault()}
+  if(e.key==='ArrowRight'||e.key==='d'){dKey.r=1;e.preventDefault()}
+});
+document.addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')dKey.l=0;
+  if(e.key==='ArrowRight'||e.key==='d')dKey.r=0;
+});
+function dLv(k){
+  dStop();dl=k;store.set('dlv',k);dObs=[];dP.x=DW/2;dT=0;dStars=0;
+  $('db').textContent=store.get('dbl'+k)||0;$('dt').textContent=0;$('dtm').textContent=DLIM;
+  document.querySelector('#d .help').textContent='指でなぞって🚀を左右に動かします。制限時間は30秒。1秒生き残るごとに+1点、⭐は+2点、最後まで生き残ると+10点。赤い輪の💣🔥🧨に当たるとゲームオーバー。'+DL[k].d;
+  msg('');$('dstart').textContent='スタート';dCss();dDraw('スタートを押してください',1);
+}
+mkLv('dlv',['簡単','普通','難しい'],dl,dLv);dLv(dl);
+
+/* reset records (2-step confirm) */
+let rstT=null;
+const REC=/^(rbest|wbest|mbest|nbest|sbest|cbest|qbest|tbest|pbest|dbl|dbest)/;
+$('rst').onclick=()=>{
+  const b=$('rst');
+  if(!rstT){
+    b.textContent='本当に消しますか？もう一度タップ';b.style.background='var(--coral)';b.style.color='var(--on-accent)';
+    rstT=setTimeout(()=>{rstT=null;b.textContent='全ゲームの記録をリセット';b.style.background='';b.style.color=''},4000);
+    return;
+  }
+  clearTimeout(rstT);rstT=null;
+  try{Object.keys(localStorage).filter(k=>REC.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
+  ['rb','nb','cbest','tbest','pb','wbest'].forEach(i=>$(i).textContent='--');
+  ['mb','sbest','hbest','db'].forEach(i=>$(i).textContent=0);
+  b.textContent='全ゲームの記録をリセット';b.style.background='';b.style.color='';
+  msg('全ゲームの記録をリセットしました');
+};
+
+/* init */
+mkLv('tlv',['簡単','普通','難しい'],tl,k=>{tl=k;store.set('tlv',k);tIdle()});tIdle();
+mkLv('plv',['簡単 3×3','普通 4×4','難しい 5×5'],pn,k=>{pn=k;store.set('plv',k);pNew()});pNew();
+wnew();
+</script>
+</body>
+</html>
